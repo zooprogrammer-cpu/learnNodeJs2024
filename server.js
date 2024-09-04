@@ -1,30 +1,35 @@
 import http from 'http';
+import dotenv from 'dotenv';
 import fs from 'fs/promises';
+dotenv.config();
 import url from 'url';
 import path from 'path';
-const PORT = 8000;
-// Get current path since __filename and __dirname are directly not supported in ES Module
+
+//Get current path
+//__filename //not available with ES Modules
+//__dirname //not available with ES Modules
 const __filename = url.fileURLToPath(import.meta.url);
-// Get current directory
 const __dirname = path.dirname(__filename);
 
-console.log('filename: ', __filename);
-console.log('dirname: ', __dirname);
+console.log('__filename: ' +__filename);
+console.log('__dirname: ' +__dirname);
 
-const server = http .createServer(async (req, res) => {
 
+const PORT = process.env.PORT;
+console.log('PORT is: ' + PORT);
+
+const server = http.createServer(async (req, res) => {
     try {
-        // Check if GET Request
+        // Check if Get request
         if (req.method === 'GET') {
             let filePath;
             if (req.url === '/') {
-                filePath = path.join(__dirname, 'public', 'index.html'); // each argument will be part of the file path.
+                filePath = path.join(__dirname, 'public', 'index.html');
             } else if (req.url === '/about') {
                 filePath = path.join(__dirname, 'public', 'about.html');
             } else {
-                throw new Error('Not found');
+                throw new Error('Not allowed');
             }
-
             const data = await fs.readFile(filePath);
             res.setHeader('Content-Type', 'text/html');
             res.write(data);
@@ -34,17 +39,12 @@ const server = http .createServer(async (req, res) => {
         }
     } catch (error) {
         res.writeHead(500, {'Content-Type': 'text/plain'})
-        res.end('Server error');
+        res.end('Server Error');
     }
 });
 
-// Listen to the port. Do something after it connects
-
-server.listen(PORT, ()=>{
-    console.log(`Server running on port ${PORT}`);
+server.listen(8080, ()=>{
+    console.log(`Server running on port ${PORT}`)
 });
-
-
-
 
 

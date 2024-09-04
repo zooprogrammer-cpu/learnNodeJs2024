@@ -6,8 +6,10 @@ function celsiusToFahrenheit(celcius) {
     return (celcius * 9/5 + 32);
 }
 
-module.exports = {
-    generateRandomNumber,
-    celsiusToFahrenheit
-}
+// module.exports = {
+//     generateRandomNumber,
+//     celsiusToFahrenheit
+// }
+
+export {generateRandomNumber, celsiusToFahrenheit };
 
