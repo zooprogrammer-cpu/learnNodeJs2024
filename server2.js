@@ -13,37 +13,53 @@ const logger = (req,res,next) => {
     next();  // this denotes that this middleware is done and let's move to the next middleware
 }
 
+//JSON middleware
+const jsonMiddleware = (req, res, next) =>{
+    res.setHeader('Content-Type', 'application/json');
+    next();
+}
+
+// Route handler for  GET /api/users
+const getUsersHandler = (req, res) =>{
+    res.write(JSON.stringify(users));
+    res.end();
+}
+
+// Route handler for GET /api/users/:id
+const getUserByIdHandler = (req, res)=>{
+    const id = req.url.split('/')[3];
+    const user = users.find((user)=> user.id === parseInt(id));
+
+    if (user) {
+        res.statusCode = 200;
+        res.write(JSON.stringify(user));
+    } else  {
+        res.statusCode = 404;
+        res.write(JSON.stringify({message: 'User not found'}));
+    }
+    res.end();
+}
+
+// Not found handler
+const notFoundHandler = (req,res)=>{
+    res.statusCode = 404;
+    res.write(JSON.stringify({message: 'Route not found'}));
+    res.end();
+}
+
 // to use the middleware, we run it and wrap everything in the callback
+//  invoking  the logger  middleware and jsonMiddleware
 const server = createServer((req, res)=>{
     logger(req,res, ()=>{
-        //give me all users
-        if (req.url === '/api/users/' && req.method === 'GET') {
-            res.setHeader('Content-Type', 'application/json');
-            res.statusCode = 200;
-            res.write(JSON.stringify(users));
-            res.end();
-        }
-        // give me a single user
-        else if (req.url.match(/\api\/users\/([0-9]+)/) && req.method === 'GET') { // regex needs to match /api/users and any number
-            const id = req.url.split('/')[3];
-            console.log(id);
-            const user = users.find((user)=> user.id === parseInt(id));
-            res.setHeader('Content-Type', 'application/json');
-            if (user) {
-                res.statusCode = 200;
-                res.write(JSON.stringify(user));
-                res.end();
-            } else  {
-                res.statusCode = 404;
-                res.write(JSON.stringify({message: 'User not found'}));
-                res.end();
+        jsonMiddleware(req, res, ()=>{
+            if(req.url === '/api/users/' && req.method === 'GET') {
+                getUsersHandler(req, res);
+            } else if (req.url.match(/\api\/users\/([0-9]+)/) && req.method === 'GET') {
+                getUserByIdHandler(req, res);
+            } else {
+                notFoundHandler(req, res);
             }
-        }
-        else {
-            res.statusCode = 404;
-            res.write(JSON.stringify({message: 'Route not found'}));
-            res.end();
-        }
+        });
     });
 });
 
